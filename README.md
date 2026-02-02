@@ -1,5 +1,10 @@
 # Daycare API 🧸🏫
 
+![Go Lint & Build](https://github.com/Jeanpigi/daycare/actions/workflows/lint.yml/badge.svg)
+![Security Scan](https://github.com/Jeanpigi/daycare/actions/workflows/trivy.yml/badge.svg)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+
+
 Backend REST API para la gestión de una guardería, desarrollado en Go (Golang) con MySQL, orientado a registrar niños, controlar asistencias (ingreso y salida), calcular cobros y administrar precios y promociones.
 
 ## 📌 Descripción general
