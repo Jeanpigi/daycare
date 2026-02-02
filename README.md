@@ -4,154 +4,135 @@ Backend REST API para la gestión de una guardería, desarrollado en Go (Golang)
 
 ## 📌 Descripción general
 
-Este proyecto implementa el backend de un sistema de guardería donde:
+### Este proyecto implementa el backend de un sistema de guardería donde:
 
-Un administrador configura precios, promociones y usuarios.
+1) Un administrador configura precios, promociones y usuarios.
+2) El personal (staff) registra niños y controla su asistencia diaria.
+3) El sistema calcula automáticamente el valor a cobrar según:
+4) tiempo de permanencia
+5) precio base activo
+6) promociones vigentes
 
-El personal (staff) registra niños y controla su asistencia diaria.
+Todas las acciones administrativas quedan registradas para auditoría. El backend está diseñado para ser consumido por un frontend (por ejemplo Vue.js) u otros clientes (Postman, curl, apps móviles, etc.).
 
-El sistema calcula automáticamente el valor a cobrar según:
+## 📌 Características principales
 
-tiempo de permanencia
-
-precio base activo
-
-promociones vigentes
-
-Todas las acciones administrativas quedan registradas para auditoría.
-
-El backend está diseñado para ser consumido por un frontend (por ejemplo Vue.js) u otros clientes (Postman, curl, apps móviles, etc.).
+- Autenticación con **JWT**
+- Roles de usuario (`ADMIN`, `STAFF`)
+- Registro de niños por documento
+- Control de **check-in / check-out**
+- Cálculo automático de cobros
+- Sistema de **precios configurables**
+- **Promociones** por tiempo o días acumulados
+- Auditoría de acciones administrativas
+- Arquitectura limpia y escalable
 
 ## 🧱 Arquitectura del proyecto
 
 El proyecto sigue una arquitectura por capas clara y mantenible:
 
-cmd/api
+- cmd/api
 Punto de entrada de la aplicación. Aquí se inicializa todo: configuración, base de datos, repositorios, servicios, handlers, middlewares y servidor HTTP.
 
-internal/config
+- internal/config
 Carga la configuración desde variables de entorno y construye el DSN de la base de datos.
 
-internal/db
+- internal/db
 Maneja la conexión a MySQL y el registro del driver.
 
-internal/domain
+- internal/domain
 Define los modelos del negocio (User, Child, Attendance, Pricing, Promotion, etc.).
 No contiene lógica ni dependencias externas.
 
-internal/repository/mysql
+- internal/repository/mysql
 Acceso a datos. Cada repositorio encapsula las consultas SQL de una tabla o conjunto de tablas.
 
-internal/service
-Lógica de negocio:
+- internal/service
 
-autenticación
+## Lógica de negocio:
 
-cálculo de precios
+- autenticación
+- cálculo de precios
+- check-in / check-out
+- administración de precios, promociones y usuarios
+- bootstrap del primer administrador
+- internal/httpapi
 
-check-in / check-out
+## Capa HTTP:
 
-administración de precios, promociones y usuarios
+- handlers: endpoints
+- middleware: autenticación y roles
+- router: definición de rutas
+- migrations:Scripts SQL para crear las tablas de la base de datos.
 
-bootstrap del primer administrador
-
-internal/httpapi
-Capa HTTP:
-
-handlers: endpoints
-
-middleware: autenticación y roles
-
-router: definición de rutas
-
-migrations
-Scripts SQL para crear las tablas de la base de datos.
 
 ## 🗄️ Base de datos
-Tablas principales
 
-users
-Usuarios del sistema. Pueden tener rol ADMIN o STAFF.
+### Tablas principales
 
-children
-Niños registrados en la guardería, identificados por número de documento.
+| Tabla | Descripción |
+|-----|-----------|
+| `users` | Usuarios del sistema (ADMIN / STAFF) |
+| `children` | Niños registrados |
+| `attendances` | Asistencias (ingreso / salida) |
+| `settings_pricing` | Precio base activo |
+| `promotions` | Promociones configurables |
+| `audit_log` | Auditoría de acciones administrativas |
 
-attendances
-Registros de ingreso y salida de cada niño, con tiempo y valores calculados.
-
-settings_pricing
-Configuración del precio base activo.
-
-promotions
-Promociones que pueden aplicar según tiempo o días acumulados.
-
-audit_log
-Registro de acciones administrativas importantes (auditoría).
 
 ## ⚙️ Requisitos
 
-Go 1.21 o superior
-
-MySQL / MariaDB 8 o superior
-
-Podman o Docker (opcional)
-
-curl (para pruebas)
+- Go **1.21+**
+- MySQL / MariaDB **8+**
+- Podman o Docker (opcional)
+- curl (para pruebas)
 
 ## 🚀 Instalación y ejecución
-Clonar el proyecto
 
 Clonar el repositorio y entrar al directorio del proyecto.
 
-Configuración
+```bash
+git clone <repositorio>
+cd daycare
+```
 
-Definir las variables de entorno necesarias:
+## Configuración
 
-APP_ENV
-Entorno de ejecución (dev, prod, etc.)
+### Definir las variables de entorno necesarias:
 
-HTTP_ADDR
-Dirección y puerto donde escucha la API (por ejemplo :8080)
+- APP_ENV: Entorno de ejecución (dev, prod, etc.)
+- HTTP_ADDR: Dirección y puerto donde escucha la API (por ejemplo :8080)
+- DB_HOST: Host de la base de datos
+- DB_PORT: Puerto de la base de datos
+- DB_NAME: Nombre de la base de datos
+- DB_USER: Usuario de la base de datos
+- DB_PASS: Contraseña del usuario
+- JWT_SECRET: Clave secreta para firmar los tokens JWT
+- JWT_TTL_MINUTES: Tiempo de vida del token en minutos
 
-DB_HOST
-Host de la base de datos
+### Base de datos (opcional con Podman)
 
-DB_PORT
-Puerto de la base de datos
+Puedes levantar MySQL usando Podman o Docker. Una vez levantada la base de datos, ejecuta los scripts SQL del directorio migrations en orden para crear las tablas.
 
-DB_NAME
-Nombre de la base de datos
 
-DB_USER
-Usuario de la base de datos
+## Ejecutar la aplicación
 
-DB_PASS
-Contraseña del usuario
+### Instalar dependencias y ejecutar el servidor:
 
-JWT_SECRET
-Clave secreta para firmar los tokens JWT
-
-JWT_TTL_MINUTES
-Tiempo de vida del token en minutos
-
-Base de datos (opcional con Podman)
-
-Puedes levantar MySQL usando Podman o Docker.
-Una vez levantada la base de datos, ejecuta los scripts SQL del directorio migrations en orden para crear las tablas.
-
-Ejecutar la aplicación
-
-Instalar dependencias y ejecutar el servidor:
-
-go mod tidy
-
-go run ./cmd/api
+```bash
+  go mod tidy
+  go run ./cmd/api
+```
 
 Verificar que la API esté funcionando accediendo al endpoint de salud:
 
-/health
+```bash
+curl http://localhost:8080/health
+```
 
 Debe responder con un JSON indicando que el servicio está activo.
+
+{"ok":true}
 
 ## 🔐 Autenticación y roles
 
@@ -161,145 +142,121 @@ El token debe enviarse en el header:
 
 Authorization: Bearer <token>
 
-Roles
+## Roles
 
-ADMIN
+- ADMIN
+
 Tiene acceso a:
 
-creación de usuarios
+1) creación de usuarios
+2) configuración de precios
+3) creación y activación de promociones
 
-configuración de precios
+- STAFF
 
-creación y activación de promociones
-
-STAFF
 Tiene acceso a:
 
-registro de niños
-
-check-in
-
-check-out
+1) registro de niños
+2) check-in
+3) check-out
 
 ## 🧭 Cómo usar la API
-Flujo normal de uso
 
-Crear el primer usuario administrador (bootstrap).
+### Flujo normal de uso
 
-Iniciar sesión como administrador.
+- Crear el primer usuario administrador (bootstrap).
+- Iniciar sesión como administrador.
+- Crear usuarios STAFF.
+- Registrar niños.
+- Registrar ingreso (check-in).
+- Registrar salida (check-out).
+- El sistema calcula automáticamente el cobro.
 
-Crear usuarios STAFF.
+## ENDPOINTS:
 
-Registrar niños.
+### NOTA: Este endpoint solo funciona si no existe ningún administrador.
 
-Registrar ingreso (check-in).
+### Crear Usuario administrador:
 
-Registrar salida (check-out).
+- Ruta: /admin/bootstrap
 
-El sistema calcula automáticamente el cobro.
-
-Crear el primer administrador
-
-Este endpoint solo funciona si no existe ningún administrador.
-
-Ruta: /admin/bootstrap
 Método: POST
-
 Se envía el nombre, correo y contraseña del administrador inicial.
 
-Iniciar sesión
+### Iniciar sesión
 
-Ruta: /auth/login
+- Ruta: /auth/login
+
+
 Método: POST
+Se envía el correo y la contraseña. La respuesta incluye un token JWT.
 
-Se envía el correo y la contraseña.
-La respuesta incluye un token JWT.
+### Crear usuarios STAFF
 
-Crear usuarios STAFF
+- Ruta: /admin/users
 
-Ruta: /admin/users
+  
 Método: POST
 Requiere rol ADMIN.
-
 Permite crear usuarios que registran asistencias.
 
-Registrar un niño
+### Registrar un niño
 
-Ruta: /children
+- Ruta: /children
+
 Método: POST
-
 Se registra el niño con su documento, nombre y datos del acudiente.
 
-Check-in
+### Check-in
 
-Ruta: /attendances/check-in
+- Ruta: /attendances/check-in
+
 Método: POST
-
 Se registra la hora de ingreso del niño usando su número de documento.
 
-Check-out
+### Check-out
 
-Ruta: /attendances/check-out
+- Ruta: /attendances/check-out
+  
 Método: POST
-
 Se registra la hora de salida.
-El sistema:
 
-calcula el tiempo total
-
-aplica precio base
-
-aplica promociones
-
-devuelve el valor final a cobrar
 
 ## 🧾 Auditoría (audit_log)
 
-La tabla audit_log registra acciones administrativas importantes, como:
+### La tabla audit_log registra acciones administrativas importantes, como:
 
-cambios de precios
+- cambios de precios
+- creación o activación de promociones
+- acciones realizadas por administradores
 
-creación o activación de promociones
+ ### Esto permite:
 
-acciones realizadas por administradores
-
-Esto permite:
-
-trazabilidad
-
-control interno
-
-respaldo ante reclamos
+- trazabilidad
+- control interno
+- respaldo ante reclamos
 
 No se usa para operaciones diarias como check-in o check-out.
 
 ## 🧠 Decisiones de diseño
 
-Separación clara de responsabilidades por capas
-
-Lógica de negocio aislada de HTTP y SQL
-
-Repositorios enfocados solo en datos
-
-Seguridad basada en JWT
-
-Pensado para integrarse fácilmente con un frontend (Vue.js u otro)
+1) Separación clara de responsabilidades por capas
+2) Lógica de negocio aislada de HTTP y SQL
+3) Repositorios enfocados solo en datos
+4) Seguridad basada en JWT
+5) Pensado para integrarse fácilmente con un frontend (Vue.js u otro)
 
 ## 🛠️ Posibles mejoras futuras
 
-Documentación OpenAPI / Swagger
+- Documentación OpenAPI / Swagger
+- Tests unitarios y de integración
+- Panel administrativo
+- Reportes mensuales
+- Despliegue en VPS o cloud
 
-Tests unitarios y de integración
-
-Panel administrativo
-
-Reportes mensuales
-
-Despliegue en VPS o cloud
 
 ## 👤 Autor
 
 Jean Pierre Giovanni Arenas Ortiz
 
-Backend Developer
-Golang · MySQL
+
