@@ -97,7 +97,7 @@ Acceso a datos. Cada repositorio encapsula las consultas SQL de una tabla o conj
 Clonar el repositorio y entrar al directorio del proyecto.
 
 ```bash
-git clone <repositorio>
+git clone https://github.com/Jeanpigi/daycare.git
 cd daycare
 ```
 
