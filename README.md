@@ -99,7 +99,23 @@ Clonar el repositorio y entrar al directorio del proyecto.
 ```bash
 git clone https://github.com/Jeanpigi/daycare.git
 cd daycare
-```
+
+En otra terminal se debe correr
+
+podman-compose up -d build
+
+## Verificar la API
+curl http://localhost:8080/health
+
+## Respuesta esperada 
+{"ok":true}
+
+
+## Detener el servicio o contenedor
+podman-compose down
+podman volume rm daycare_mysql_data
+
+
 
 ## Configuración
 

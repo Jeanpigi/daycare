@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    container_name: daycare-api
+    restart: always
+    depends_on:
+      - mysql
+    ports:
+      - "8080:8080"
+    environment:
+      APP_ENV: dev
+      HTTP_ADDR: ":8080"
+
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: daycare
+      DB_USER: daycare_user
+      DB_PASS: daycare_pass
+
+      JWT_SECRET: change_me_in_prod
+      JWT_TTL_MINUTES: 720
+
+    networks:
+      - daycare-net
+
+  mysql:
+    image: mysql:8.0
+    container_name: daycare-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: daycare
+      MYSQL_USER: daycare_user
+      MYSQL_PASSWORD: daycare_pass
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - daycare-net
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    
+
+volumes:
+  mysql-data:
+
+networks:
+  daycare-net:
+    driver: bridge
+
